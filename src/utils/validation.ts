@@ -32,5 +32,13 @@ export function esItemLista(value: unknown): value is ItemLista {
       !(v.posterPath === null || typeof v.posterPath === 'string') ||
       typeof v.agregadoEn !== 'string' || !Number.isFinite(Date.parse(v.agregadoEn)) ||
       typeof v.actualizadoEn !== 'string' || !Number.isFinite(Date.parse(v.actualizadoEn))) return false;
+  if (v.vistaEn !== undefined && v.vistaEn !== null &&
+      (v.estado !== 'vista' || typeof v.vistaEn !== 'string' || !Number.isFinite(Date.parse(v.vistaEn)))) return false;
+  if (v.generos !== undefined && (!Array.isArray(v.generos) || v.generos.length > 10 ||
+      !v.generos.every(x => typeof x === 'string'))) return false;
+  if (v.directores !== undefined && (!Array.isArray(v.directores) || v.directores.length > 10 ||
+      !v.directores.every(x => typeof x === 'string'))) return false;
+  if (v.duracionMin !== undefined && v.duracionMin !== null &&
+      (typeof v.duracionMin !== 'number' || !Number.isInteger(v.duracionMin) || v.duracionMin < 1 || v.duracionMin > 1000)) return false;
   try { validarCambios(v as unknown as CambiosEntrada); return true; } catch { return false; }
 }

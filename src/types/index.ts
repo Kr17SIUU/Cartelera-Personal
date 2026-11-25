@@ -23,6 +23,10 @@ export interface ItemLista extends Obra {
   // ISO en memoria/caché; serverTimestamp en Firestore.
   agregadoEn: string;
   actualizadoEn: string;
+  vistaEn?: string | null;
+  generos?: string[];
+  duracionMin?: number | null;
+  directores?: string[];
 }
 export type CambiosEntrada = Pick<ItemLista, 'estado' | 'calificacionPersonal' | 'comentario'>;
 export interface Actor { id: number; name: string; character: string; profile_path: string | null }
@@ -32,6 +36,7 @@ export interface DetalleObra extends Obra {
   votos: number;
   generos: string[];
   duracion: number | null;
+  directores: string[];
   elenco: Actor[];
 }
 export interface ResultadoBusqueda { resultados: Obra[]; pagina: number; totalPaginas: number; totalResultados: number }
@@ -52,7 +57,7 @@ export interface DetalleTmdb extends ResultadoTmdb {
   genres: { id: number; name: string }[];
   runtime?: number;
   episode_run_time?: number[];
-  credits?: { cast: Actor[] };
+  credits?: { cast: Actor[]; crew?: { name: string; job: string }[] };
 }
 export interface ConfiguracionTmdb {
   images: { secure_base_url: string; poster_sizes: string[]; profile_sizes: string[] };

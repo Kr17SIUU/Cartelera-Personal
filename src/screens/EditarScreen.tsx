@@ -63,7 +63,7 @@ export function EditarScreen({ route, navigation }: NativeStackScreenProps<RootP
       <Boton texto="Quitar de Mi lista" peligro disabled={disabled} cargando={ocupado === 'borrar'} onPress={confirmar} />
     </ScrollView>
     <Modal visible={confirmacion} transparent animationType="fade" onRequestClose={() => setConfirmacion(false)}>
-      <View style={{ flex: 1, backgroundColor: '#000000BB', justifyContent: 'center', padding: 24 }}>
+      <View style={{ flex: 1, backgroundColor: c.scrim, justifyContent: 'center', padding: 24 }}>
         <View accessibilityViewIsModal style={s.panel}>
           <Text style={s.subtitle}>¿Quitar de Mi lista?</Text>
           <Text style={s.body}>Se eliminarán tu calificación y comentario de «{item.titulo}».</Text>

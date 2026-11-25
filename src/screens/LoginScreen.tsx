@@ -25,7 +25,7 @@ export function LoginScreen() {
   }
   return <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[s.content, { flexGrow: 1, justifyContent: 'center', paddingTop: 45 }]}>
-      <LinearGradient colors={['#34305A', '#151B2A']} style={{ padding: 25, borderRadius: 26, gap: 16 }}>
+      <LinearGradient colors={[c.gradientStart, c.panel]} style={{ padding: 25, borderRadius: 26, gap: 16 }}>
         <View style={s.row}><Ionicons name="film-outline" size={32} color={c.accent} /><Text style={s.eyebrow}>TU PRÓXIMA HISTORIA</Text></View>
         <Text style={[s.title, { fontSize: 38, lineHeight: 42 }]}>Mi Cartelera{ '\n' }Personal.</Text>
         <Text style={s.body}>Las historias que quieres ver.{ '\n' }Las que se quedan contigo.</Text>

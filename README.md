@@ -4,7 +4,7 @@ Aplicación móvil académica para buscar películas y series en TMDB y organiza
 
 ## Objetivo y pantallas
 
-Registro / Login → pestañas Buscar, Mi lista y Acerca de → Detalle y Editar entrada en una pila. La lista permite estados Por ver / Viendo / Vista, filtros, estrellas de 1 a 5 solo en Vista y comentarios de hasta 500 caracteres. Las eliminaciones requieren confirmación.
+Registro / Login → pestañas Buscar, Mi lista, Mi año y Acerca de → Detalle y Editar entrada en una pila. La lista permite estados Por ver / Viendo / Vista, filtros, estrellas de 1 a 5 solo en Vista y comentarios de hasta 500 caracteres. Las eliminaciones requieren confirmación.
 
 ## Instalación
 
@@ -33,3 +33,15 @@ Las pruebas en un teléfono, las llamadas con credenciales reales y las capturas
 This product uses the TMDB API but is not endorsed or certified by TMDB.
 
 Datos e imágenes de [TMDB](https://www.themoviedb.org/). Uso académico no comercial. Ver créditos dentro de la app.
+
+## Proyecto 4: Mi año en cine
+
+La pestaña **Mi año** muestra estadísticas por calendario local: películas, series, horas de cine, género, director, doce meses y obra destacada. `vistaEn` se registra al pasar a Vista, sin alterar al editar calificación/comentario. Las obras antiguas se migran cuando la pestaña se abre en línea. Los metadatos faltantes se completan desde TMDB. Sin conexión se muestra la copia local existente.
+
+**Antes de abrir la pestaña nueva:** publicar la versión actualizada de `firestore.rules` desde Firebase Console → Firestore → Reglas. Primero verificar los permisos con el emulador y dos usuarios; las reglas que ya están publicadas no se modifican automáticamente al cambiar el archivo. No subir `.env` a GitHub; después de extraer el ZIP conservar el `.env` local que ya funciona.
+
+**Calidad:** `npm install`, `npm run typecheck`, `npm test`, `npm run lint`, `npm run test:rules` (requiere emulador) y `npx expo start -c`. Las pruebas con Firebase real, capturas de pantalla y la columna de resultados obtenidos en `docs/VERIFICACION.md` deben completarse en el teléfono. Este paquete incluye tests `node:test` y un sensor de colores; la conversión a Vitest sigue pendiente si el docente mantiene esa exigencia.
+
+**Documentos:** `docs/prd/`, `docs/backlog/`, `docs/diseno/`, `DESIGN.md`, `docs/specs/`, `docs/IA.md` y `docs/VERIFICACION.md`. El brand board se abre en el navegador mediante `docs/diseno/brand-board.html`.
+
+**Git:** usar la rama `epica-mi-anio`. Registrar primero los cambios de documentación (`docs:`), luego los tests (`test:`) y finalmente implementación (`feat:`), revisando los archivos con `git diff --cached`. No publicar capturas con tokens ni claves.

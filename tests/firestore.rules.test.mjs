@@ -15,7 +15,7 @@ test('A crea, lee, lista, actualiza y borra su propia entrada', async () => {
   await assertSucceeds(setDoc(ref(), base()));
   await assertSucceeds(getDoc(ref()));
   await assertSucceeds(getDocs(collection(env.authenticatedContext('A').firestore(), 'usuarios/A/mi_lista')));
-  await assertSucceeds(updateDoc(ref(), { estado: 'vista', calificacionPersonal: 5, comentario: 'Buena', actualizadoEn: serverTimestamp() }));
+  await assertSucceeds(updateDoc(ref(), { estado: 'vista', vistaEn: serverTimestamp(), calificacionPersonal: 5, comentario: 'Buena', actualizadoEn: serverTimestamp() }));
   await assertSucceeds(deleteDoc(ref()));
 });
 test('B no puede leer, listar, crear, actualizar ni borrar datos de A', async () => {
@@ -45,7 +45,7 @@ test('las estrellas requieren Vista, enteros y rango 1 a 5; null sí se admite',
   await setDoc(ref(), base());
   for (const estado of ['por_ver', 'viendo']) await assertFails(updateDoc(ref(), { estado, calificacionPersonal: 3, actualizadoEn: serverTimestamp() }));
   for (const n of [0, 6, 1.5]) await assertFails(updateDoc(ref(), { estado: 'vista', calificacionPersonal: n, actualizadoEn: serverTimestamp() }));
-  await assertSucceeds(updateDoc(ref(), { estado: 'vista', calificacionPersonal: 1, actualizadoEn: serverTimestamp() }));
+  await assertSucceeds(updateDoc(ref(), { estado: 'vista', vistaEn: serverTimestamp(), calificacionPersonal: 1, actualizadoEn: serverTimestamp() }));
   await assertFails(updateDoc(ref(), { estado: 'viendo', actualizadoEn: serverTimestamp() }));
   await assertSucceeds(updateDoc(ref(), { estado: 'viendo', calificacionPersonal: null, actualizadoEn: serverTimestamp() }));
 });
@@ -59,6 +59,20 @@ test('500 caracteres sí, 501 no; identidad y agregadoEn inmutables', async () =
 test('película y serie con mismo id pueden coexistir; sobrescribir como alta no borra la opinión', async () => {
   await assertSucceeds(setDoc(ref(), base()));
   await assertSucceeds(setDoc(ref('A', 'A', 'tv_550'), { ...base(), tipo: 'tv' }));
-  await assertSucceeds(updateDoc(ref(), { estado: 'vista', calificacionPersonal: 4, actualizadoEn: serverTimestamp() }));
+  await assertSucceeds(updateDoc(ref(), { estado: 'vista', vistaEn: serverTimestamp(), calificacionPersonal: 4, actualizadoEn: serverTimestamp() }));
   await assertFails(setDoc(ref(), base()));
+});
+
+test('vistaEn requiere timestamp al pasar a vista y se borra al salir', async () => {
+  await setDoc(ref(), base());
+  await assertFails(updateDoc(ref(), { estado: 'vista', actualizadoEn: serverTimestamp() }));
+  await assertSucceeds(updateDoc(ref(), { estado: 'vista', vistaEn: serverTimestamp(), actualizadoEn: serverTimestamp() }));
+  await assertFails(updateDoc(ref(), { vistaEn: null, actualizadoEn: serverTimestamp() }));
+  await assertSucceeds(updateDoc(ref(), { estado: 'por_ver', vistaEn: null, actualizadoEn: serverTimestamp() }));
+});
+test('se validan duración y listas nuevas sin romper documentos antiguos', async () => {
+  await setDoc(ref(), base());
+  await assertFails(updateDoc(ref(), { duracionMin: -5, actualizadoEn: serverTimestamp() }));
+  await assertFails(updateDoc(ref(), { directores: Array(11).fill('Director'), actualizadoEn: serverTimestamp() }));
+  await assertSucceeds(updateDoc(ref(), { duracionMin: 110, generos: ['Drama'], directores: ['Ana'], actualizadoEn: serverTimestamp() }));
 });

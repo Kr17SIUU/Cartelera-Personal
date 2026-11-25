@@ -53,3 +53,9 @@ No aparece `SPEC.md` ni el documento de RF1–RF10 del Proyecto 3. Por ello esta
 ## Cierre final
 
 Pendiente del Hito 4: registrar fecha, hallazgos resueltos, riesgos remanentes, hallazgos nuevos y resultados reales de las verificaciones.
+
+## Actualización de desarrollo — 24 de noviembre de 2026
+
+Se prepararon en una copia de trabajo: pantalla `MiAnioScreen`, navegación, dominio puro, datos de TMDB, migraciones, tokens, brand board, `DESIGN.md`, spec, tests y nuevas reglas. Los hallazgos A-01 a A-07 y A-10 tienen **código de corrección propuesto**, pero no se consideran cerrados hasta ejecutar el proyecto en Expo Go, comprobar reglas y publicar los cambios. A-08 sigue parcialmente abierto por falta de Vitest. A-11 y A-12 requieren historial de Git y especificación original, respectivamente.
+
+**Verificaciones ejecutadas en esta copia:** análisis sintáctico de 34 archivos TS/TSX sin errores de parseo; 7 tests nuevos de dominio aprobados al compilar únicamente ese módulo; sensor de colores sin hexadecimales fuera de `src/tema`. `npm test` completo, `tsc --noEmit`, emulador de Firestore y Expo Go **no se han ejecutado con éxito en este entorno** por falta de instalación de dependencias. No afirmar que están en verde hasta comprobarlos en el equipo de entrega.

@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { observarRed } from '../services/redService';
-import { CambiosEntrada, ItemLista, Obra, Usuario } from '../types';
+import { CambiosEntrada, DetalleObra, ItemLista, Obra, Usuario } from '../types';
 import * as authService from '../services/authService';
 import * as listaService from '../services/listaService';
 import { guardarCache, leerCache } from '../services/cacheService';
@@ -14,7 +14,7 @@ interface Cartelera {
   conectado: boolean; copiaLocal: boolean; ultimaCopia: string | null; aviso: string | null;
   problema: string | null; operacionPendiente: boolean;
   autenticar: typeof authService.entrar; cerrarSesion: () => Promise<void>;
-  refrescar: () => Promise<void>; agregar: (obra: Obra) => Promise<void>;
+  refrescar: () => Promise<void>; agregar: (obra: Obra | DetalleObra) => Promise<void>;
   actualizar: (id: string, cambios: CambiosEntrada) => Promise<void>; eliminar: (id: string) => Promise<void>;
 }
 const Contexto = createContext<Cartelera | null>(null);
@@ -143,18 +143,23 @@ export function CarteleraProvider({ children }: { children: React.ReactNode }) {
     }
   }, [aplicar, cargandoLista, persistir, refrescar]);
 
-  const agregar = useCallback((obra: Obra) => {
+  const agregar = useCallback((obra: Obra | DetalleObra) => {
     const id = itemId(obra);
     if (listaRef.current.some(item => item.id === id)) return Promise.reject(new Error('Esta obra ya está en tu lista.'));
     return mutar(uid => listaService.agregar(uid, obra), items => {
       const fecha = new Date().toISOString();
       return [{ ...obra, titulo: [...obra.titulo].slice(0, 200).join(''), id, estado: 'por_ver',
-        calificacionPersonal: null, comentario: '', agregadoEn: fecha, actualizadoEn: fecha }, ...items.filter(i => i.id !== id)];
+        calificacionPersonal: null, comentario: '', agregadoEn: fecha, actualizadoEn: fecha, vistaEn: null,
+        generos: 'generos' in obra ? obra.generos : [],
+        duracionMin: obra.tipo === 'movie' && 'duracion' in obra ? obra.duracion : null,
+        directores: obra.tipo === 'movie' && 'directores' in obra ? obra.directores : [] }, ...items.filter(i => i.id !== id)];
     });
   }, [mutar]);
   const actualizar = useCallback((id: string, cambios: CambiosEntrada) => mutar(
     uid => listaService.actualizar(uid, id, cambios),
-    items => items.map(item => item.id === id ? { ...item, ...cambios, actualizadoEn: new Date().toISOString() } : item),
+    items => items.map(item => item.id === id ? { ...item, ...cambios,
+      vistaEn: cambios.estado !== item.estado ? (cambios.estado === 'vista' ? new Date().toISOString() : null) : item.vistaEn,
+      actualizadoEn: new Date().toISOString() } : item),
   ), [mutar]);
   const eliminar = useCallback((id: string) => mutar(uid => listaService.eliminar(uid, id), items => items.filter(item => item.id !== id)), [mutar]);
   const cerrarSesion = useCallback(async () => { await authService.salir(); }, []);

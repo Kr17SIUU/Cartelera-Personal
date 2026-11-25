@@ -6,7 +6,7 @@ export function Boton({ texto, onPress, disabled = false, cargando = false, secu
   { texto: string; onPress: () => void; disabled?: boolean; cargando?: boolean; secundario?: boolean; peligro?: boolean }) {
   return <Pressable accessibilityRole="button" accessibilityState={{ disabled: disabled || cargando }}
     disabled={disabled || cargando} onPress={onPress}
-    style={({ pressed }) => [styles.button, { backgroundColor: peligro ? '#3D2131' : secundario ? c.raised : c.accent,
+    style={({ pressed }) => [styles.button, { backgroundColor: peligro ? c.dangerBackground : secundario ? c.raised : c.accent,
       opacity: disabled || cargando ? 0.5 : pressed ? 0.8 : 1 }]}>
     {cargando ? <ActivityIndicator color={secundario ? c.accent : c.bg} /> :
       <Text style={[styles.buttonText, { color: peligro ? c.danger : secundario ? c.text : c.bg }]}>{texto}</Text>}
@@ -20,7 +20,7 @@ export function Chip({ texto, activo, onPress }: { texto: string; activo: boolea
   </Pressable>;
 }
 export function Aviso({ texto, error = false }: { texto: string; error?: boolean }) {
-  return <View accessibilityLiveRegion="polite" style={[styles.notice, { borderColor: error ? '#723C4C' : c.line }]}>
+  return <View accessibilityLiveRegion="polite" style={[styles.notice, { borderColor: error ? c.dangerBorder : c.line }]}>
     <Ionicons name={error ? 'alert-circle-outline' : 'information-circle-outline'} size={20} color={error ? c.danger : c.accent} />
     <Text style={[s.body, { flex: 1, fontSize: 13, color: error ? c.danger : c.muted }]}>{texto}</Text>
   </View>;

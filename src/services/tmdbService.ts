@@ -68,5 +68,7 @@ export async function obtenerDetalle(tipo: TipoMedio, id: number, signal?: Abort
   const d = await pedirTmdb<DetalleTmdb>(`/${tipo}/${id}`, { append_to_response: 'credits' }, signal);
   return { ...normalizar(d, tipo), sinopsis: d.overview?.trim() || 'Sin sinopsis disponible en español.',
     puntuacion: d.vote_average, votos: d.vote_count, generos: d.genres.map(g => g.name),
-    duracion: d.runtime || d.episode_run_time?.[0] || null, elenco: d.credits?.cast.slice(0, 12) ?? [] };
+    duracion: tipo === 'movie' ? d.runtime || null : null,
+    directores: tipo === 'movie' ? [...new Set((d.credits?.crew ?? []).filter(p => p.job === 'Director').map(p => p.name))].slice(0, 10) : [],
+    elenco: d.credits?.cast.slice(0, 12) ?? [] };
 }

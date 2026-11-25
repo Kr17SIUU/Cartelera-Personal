@@ -1,6 +1,7 @@
 import { collection, doc, getDocs, runTransaction, serverTimestamp, Timestamp } from 'firebase/firestore/lite';
 import { obtenerAuth, obtenerDb } from '../firebase/config';
-import { CambiosEntrada, ItemLista, Obra } from '../types';
+import { CambiosEntrada, DetalleObra, ItemLista, Obra } from '../types';
+import { obtenerDetalle } from './tmdbService';
 import { esItemLista, itemId, validarCambios } from '../utils/validation';
 function exigirUsuario(uid: string): void {
   if (obtenerAuth().currentUser?.uid !== uid) throw new Error('La sesión cambió. Vuelve a abrir tu lista.');
@@ -17,12 +18,13 @@ export async function obtener(uid: string): Promise<ItemLista[]> {
     const datos = documento.data();
     const item: unknown = { ...datos, id: documento.id,
       agregadoEn: datos.agregadoEn instanceof Timestamp ? datos.agregadoEn.toDate().toISOString() : '',
-      actualizadoEn: datos.actualizadoEn instanceof Timestamp ? datos.actualizadoEn.toDate().toISOString() : '' };
+      actualizadoEn: datos.actualizadoEn instanceof Timestamp ? datos.actualizadoEn.toDate().toISOString() : '',
+      vistaEn: datos.vistaEn instanceof Timestamp ? datos.vistaEn.toDate().toISOString() : null };
     if (!esItemLista(item)) throw new Error('Hay una entrada con datos inválidos en Firestore. Revisa sus campos.');
     return item;
   }).sort((a, b) => b.agregadoEn.localeCompare(a.agregadoEn));
 }
-export async function agregar(uid: string, obra: Obra): Promise<void> {
+export async function agregar(uid: string, obra: Obra | DetalleObra): Promise<void> {
   const ref = referencia(uid, itemId(obra));
   await runTransaction(obtenerDb(), async transaction => {
     const actual = await transaction.get(ref);
@@ -30,16 +32,25 @@ export async function agregar(uid: string, obra: Obra): Promise<void> {
     transaction.set(ref, { tmdbId: obra.tmdbId, tipo: obra.tipo,
       titulo: [...obra.titulo].slice(0, 200).join(''), anio: obra.anio, posterPath: obra.posterPath,
       estado: 'por_ver', calificacionPersonal: null, comentario: '',
-      agregadoEn: serverTimestamp(), actualizadoEn: serverTimestamp() });
+      agregadoEn: serverTimestamp(), actualizadoEn: serverTimestamp(), vistaEn: null,
+      generos: 'generos' in obra ? obra.generos.slice(0, 10) : [],
+      duracionMin: obra.tipo === 'movie' && 'duracion' in obra ? obra.duracion : null,
+      directores: obra.tipo === 'movie' && 'directores' in obra ? obra.directores.slice(0, 10) : [] });
   });
 }
 export async function actualizar(uid: string, id: string, cambios: CambiosEntrada): Promise<void> {
   validarCambios(cambios);
   const ref = referencia(uid, id);
   await runTransaction(obtenerDb(), async transaction => {
-    if (!(await transaction.get(ref)).exists()) throw new Error('Esta entrada ya no existe. Actualiza tu lista.');
+    const anterior = await transaction.get(ref);
+    if (!anterior.exists()) throw new Error('Esta entrada ya no existe. Actualiza tu lista.');
+    const estadoAnterior = anterior.data().estado;
+    const fechaNueva = cambios.estado !== estadoAnterior
+      ? (cambios.estado === 'vista' ? serverTimestamp() : null)
+      : undefined;
     transaction.update(ref, { estado: cambios.estado, comentario: cambios.comentario,
-      calificacionPersonal: cambios.calificacionPersonal, actualizadoEn: serverTimestamp() });
+      calificacionPersonal: cambios.calificacionPersonal, actualizadoEn: serverTimestamp(),
+      ...(fechaNueva !== undefined ? { vistaEn: fechaNueva } : {}) });
   });
 }
 export async function eliminar(uid: string, id: string): Promise<void> {
@@ -47,5 +58,31 @@ export async function eliminar(uid: string, id: string): Promise<void> {
   await runTransaction(obtenerDb(), async transaction => {
     await transaction.get(ref);
     transaction.delete(ref);
+  });
+}
+
+export async function migrarFecha(uid: string, item: ItemLista): Promise<void> {
+  const ref = referencia(uid, item.id);
+  await runTransaction(obtenerDb(), async transaction => {
+    const snap = await transaction.get(ref);
+    if (!snap.exists()) return;
+    const data = snap.data();
+    if (data.estado === 'vista' && !data.vistaEn && data.actualizadoEn instanceof Timestamp) {
+      transaction.update(ref, { vistaEn: data.actualizadoEn, actualizadoEn: serverTimestamp() });
+    }
+  });
+}
+export async function completarDatos(uid: string, item: ItemLista): Promise<void> {
+  const detalle = await obtenerDetalle(item.tipo, item.tmdbId);
+  const ref = referencia(uid, item.id);
+  await runTransaction(obtenerDb(), async transaction => {
+    const snap = await transaction.get(ref);
+    if (!snap.exists() || snap.data().estado !== 'vista') return;
+    transaction.update(ref, {
+      generos: detalle.generos.slice(0, 10),
+      duracionMin: item.tipo === 'movie' ? detalle.duracion : null,
+      directores: item.tipo === 'movie' ? detalle.directores.slice(0, 10) : [],
+      actualizadoEn: serverTimestamp(),
+    });
   });
 }

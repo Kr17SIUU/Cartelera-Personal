@@ -8,6 +8,7 @@ import { useCartelera } from '../context/CarteleraContext';
 import { LoginScreen } from '../screens/LoginScreen';
 import { BuscarScreen } from '../screens/BuscarScreen';
 import { MiListaScreen } from '../screens/MiListaScreen';
+import { MiAnioScreen } from '../screens/MiAnioScreen';
 import { DetalleScreen } from '../screens/DetalleScreen';
 import { EditarScreen } from '../screens/EditarScreen';
 import { AcercaScreen } from '../screens/AcercaScreen';
@@ -20,7 +21,7 @@ const theme = { ...DarkTheme, colors: { ...DarkTheme.colors, background: c.bg, c
 function InicioTabs() {
   const insets = useSafeAreaInsets();
   const iconos: Record<keyof TabParams, React.ComponentProps<typeof Ionicons>['name']> = {
-    Buscar: 'search-outline', MiLista: 'bookmarks-outline', Acerca: 'person-circle-outline',
+    Buscar: 'search-outline', MiLista: 'bookmarks-outline', MiAnio: 'stats-chart-outline', Acerca: 'person-circle-outline',
   };
   return <Tabs.Navigator screenOptions={({ route }) => ({
     headerShown: false, tabBarActiveTintColor: c.accent, tabBarInactiveTintColor: c.muted,
@@ -30,6 +31,7 @@ function InicioTabs() {
   })}>
     <Tabs.Screen name="Buscar" component={BuscarScreen} options={{ title: 'Buscar' }} />
     <Tabs.Screen name="MiLista" component={MiListaScreen} options={{ title: 'Mi lista' }} />
+    <Tabs.Screen name="MiAnio" component={MiAnioScreen} options={{ title: 'Mi año' }} />
     <Tabs.Screen name="Acerca" component={AcercaScreen} options={{ title: 'Acerca de' }} />
   </Tabs.Navigator>;
 }
